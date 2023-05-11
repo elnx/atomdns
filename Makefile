@@ -39,7 +39,7 @@ generate:
 
 build: generate tidy check
 	@echo "build atomdns"
-	@CGO_ENABLED=0 go build -o bin/atomdns ./cmd/atomdns
+	@CGO_ENABLED=0 go build -o bin/ ./cmd/atomdns
 	@echo "ok"
 
 test:
