@@ -14,17 +14,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-    - name: Setup env
-      run: |
-        echo "::set-env name=GOPATH::$(go env GOPATH)"
-        echo "::add-path::$(go env GOPATH)/bin"
-      shell: bash
-      
-    - name: Checkout
-      uses: actions/checkout@v1
-      with:
-        fetch-depth: 1
-        path: src/github.com/${{ github.repository }}
+    - uses: actions/checkout@v3
 
     - name: Set up Go
       uses: actions/setup-go@v3
@@ -33,12 +23,10 @@ jobs:
     
     - name: Install dependencies
       run: |
-        go get -u golang.org/x/lint/golint
-        
+        sudo apt-get install -y golint
+
     - name: Build
-      run: |
-        go env
-        make build && make build GOOS=windows
+      run: make build && make build GOOS=windows
 
     - name: Test
       run: make test
