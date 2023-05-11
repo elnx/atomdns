@@ -42,11 +42,15 @@ func New(cfg *config.Config) (s *Server, err error) {
 	// Setup matches.
 	s.matchers = make([]match.Match, 0, len(cfg.Matches))
 	for _, v := range cfg.Matches {
+		if _, ok := cfg.Rules[v.Name]; !ok {
+			fmt.Printf("WARNING: [%v] not used\n", v.Name)
+		}
 		m, err := match.New(v)
 		if err != nil {
 			return nil, fmt.Errorf("match new: %w", err)
 		}
 		s.matchers = append(s.matchers, m)
+
 	}
 
 	// Setup rules.
@@ -114,5 +118,4 @@ func (s *Server) ServeDNS(w dns.ResponseWriter, r *dns.Msg) {
 	} else {
 		s.c.Set(req.ID(), m.Copy(), 0)
 	}
-	return
 }
