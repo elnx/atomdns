@@ -5,9 +5,9 @@ name: Go
 
 on:
   push:
-    branches: [ "master" ]
+    branches: [ "master", "filter" ]
   pull_request:
-    branches: [ "master" ]
+    branches: [ "master", "filter" ]
 
 jobs:
 
@@ -26,3 +26,10 @@ jobs:
 
     - name: Test
       run: make test
+      
+    - name: Archive production artifacts
+      uses: actions/upload-artifact@v3
+      with: 
+        name: atomdns
+        path: |
+          filter
