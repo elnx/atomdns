@@ -28,6 +28,21 @@ func (c *client) Name() string {
 
 // ServeDNS implements upstream.ServeDNS
 func (c *client) ServeDNS(r *request.Request) (m *dns.Msg, err error) {
+	// mimicking bind9...
+	r.R.CheckingDisabled = true
+	r.R.Extra = r.R.Extra[:0]
+	r.R.SetEdns0(dns.DefaultMsgSize, true)
+	// o := new(dns.OPT)
+	// o.Hdr.Name = "."
+	// o.Hdr.Rrtype = dns.TypeOPT
+	// o.SetUDPSize(dns.DefaultMsgSize)
+	// o.SetDo()
+	// e := new(dns.EDNS0_COOKIE)
+	// e.Code = dns.EDNS0COOKIE
+	// e.Cookie = "1234567812345678"
+	// o.Option = append(o.Option, e)
+	// r.R.Extra = append(r.R.Extra, o)
+
 	m, _, err = c.c.Exchange(r.R, c.config.Addr)
 	if err != nil {
 		log.Printf("serve dns: %v", err)
