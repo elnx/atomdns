@@ -23,11 +23,13 @@ jobs:
     
     - name: Install dependencies
       run: |
-        go install golang.org/x/lint/golint
+        go get -u golang.org/x/lint/golint
 
     - name: Build
       run: |
         export PATH=$PATH:$(go env GOPATH)/bin
+        go env
+        echo $PATH
         make build && make build GOOS=windows
 
     - name: Test
