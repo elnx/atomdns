@@ -23,7 +23,7 @@ jobs:
     
     - name: Install dependencies
       run: |
-        go get -u golang.org/x/lint/golint
+        apt-get install -y golint
 
     - name: Build
       run: make build && make build GOOS=windows
