@@ -43,7 +43,7 @@ func New(cfg *config.Config) (s *Server, err error) {
 	s.matchers = make([]match.Match, 0, len(cfg.Matches))
 	for _, v := range cfg.Matches {
 		if _, ok := cfg.Rules[v.Name]; !ok {
-			fmt.Printf("WARNING: [%v] not used\n", v.Name)
+			log.Printf("WARNING: match [%v] is not used", v.Name)
 		}
 		m, err := match.New(v)
 		if err != nil {

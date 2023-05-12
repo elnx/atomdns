@@ -14,7 +14,7 @@ import (
 
 // Config is the main config for atomdns
 type Config struct {
-	Listen    string             `hcl:"listen"`
+	Listen    []string           `hcl:"listen"`
 	Upstreams []*upstream.Config `hcl:"upstream,block"`
 	Matches   []*match.Config    `hcl:"match,block"`
 	Rules     map[string]string  `hcl:"rules"`
