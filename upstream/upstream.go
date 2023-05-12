@@ -21,6 +21,7 @@ type Config struct {
 	Name    string   `hcl:",label"`
 	Type    string   `hcl:"type"`
 	Addr    string   `hcl:"addr"`
+	Filter  string   `hcl:"filter,optional"`
 	Options hcl.Body `hcl:",remain"`
 }
 
