@@ -3,6 +3,7 @@ package server
 import (
 	"fmt"
 	"log"
+	"sync/atomic"
 	"time"
 
 	"github.com/miekg/dns"
@@ -13,6 +14,12 @@ import (
 	"github.com/Xuanwo/atomdns/pkg/request"
 	"github.com/Xuanwo/atomdns/upstream"
 )
+
+// CacheHitCount cache hit count
+var CacheHitCount uint64
+
+// QueryCount total query count
+var QueryCount uint64
 
 // Server is the dns server.
 type Server struct {
@@ -63,45 +70,42 @@ func New(cfg *config.Config) (s *Server, err error) {
 
 // ServeDNS implements dns.Handler
 func (s *Server) ServeDNS(w dns.ResponseWriter, r *dns.Msg) {
-	log.Print(r.Question)
+
+	atomic.AddUint64(&QueryCount, 1)
 
 	req := &request.Request{R: r}
 
 	if v, ok := s.c.Get(req.ID()); ok {
 		m := v.(*dns.Msg)
 		m.Id = r.Id
+		log.Printf("cached %s => %v", req.ID(), m.Answer)
+		atomic.AddUint64(&CacheHitCount, 1)
 		err := w.WriteMsg(m)
 		if err != nil {
 			log.Printf("write msg: %v", err)
 			return
 		}
-
-		log.Printf("cache hit for %s", req.ID())
 		return
 	}
 
-	var up upstream.Upstream
+	up := s.rules["default"]
 
 	for _, m := range s.matchers {
-		if !m.IsMatch(req) {
-			continue
+		if s.rules[m.Name()] != nil && m.IsMatch(req) {
+			up = s.rules[m.Name()]
+			// log.Printf("rule %s matched, served via %s", m.Name(), s.rules[m.Name()].Name())
+			break
 		}
-		log.Printf("rule %s matched, served via %s", m.Name(), s.rules[m.Name()].Name())
-
-		up = s.rules[m.Name()]
-		break
 	}
-	if up == nil {
-		log.Printf("no rules matched, served via %s", s.rules["default"].Name())
-
-		up = s.rules["default"]
-	}
+	// log.Printf("no rules matched, served via %s", s.rules["default"].Name())
 
 	m, err := up.ServeDNS(req)
 	if err != nil {
 		m = new(dns.Msg)
 		m.SetRcode(r, dns.RcodeServerFailure)
 	}
+
+	log.Printf("%v => %v => %v", r.Question, up.Name(), m.Answer)
 
 	err = w.WriteMsg(m)
 	if err != nil {

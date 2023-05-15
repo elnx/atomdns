@@ -4,6 +4,7 @@ import (
 	"log"
 	"os"
 	"sync"
+	"time"
 
 	"github.com/miekg/dns"
 
@@ -44,5 +45,12 @@ func main() {
 			}
 		}(v)
 	}
+
+	go func() {
+		for range time.Tick(time.Minute) {
+			log.Printf("cache hit rate = %.4f", float64(server.CacheHitCount)/float64(server.QueryCount))
+		}
+	}()
+
 	wg.Wait()
 }
